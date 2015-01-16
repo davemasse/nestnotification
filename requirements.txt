@@ -1,0 +1,2 @@
+-e git+https://github.com/jkoelker/nest_thermostat.git#egg=nest
+twilio
