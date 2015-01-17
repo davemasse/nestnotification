@@ -6,12 +6,29 @@ from nest_thermostat import utils as nest_utils
 
 import settings
 
-def main():
+client = twilio.rest.TwilioRestClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
+def send_notification(message):
     sent_message_count = 0
 
-    client = twilio.rest.TwilioRestClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    try:
+        for number in settings.TWILIO_TO_NUMBERS:
+            print 'Notifying %s\n' % (number,)
+            message = client.messages.create(
+                body = message,
+                to=number,
+                from_=settings.TWILIO_FROM_NUMBER
+            )
+        sent_message_count += 1
+    except twilio.TwilioRestException as e:
+        print e
 
+    return sent_message_count
+
+def main():
     napi = nest.Nest(settings.NEST_USERNAME, settings.NEST_PASSWORD)
+
+    sent_message_count = 0
 
     for structure in napi.structures:
         if structure.away:
@@ -39,21 +56,13 @@ def main():
                         f.write(str(num_notifications))
 
                     if num_notifications <= settings.MAX_NOTIFICATIONS:
-                        try:
-                            for number in settings.TWILIO_TO_NUMBERS:
-                                print 'Notifying %s\n' % (number,)
-                                message = client.messages.create(
-                                    body = message,
-                                    to=number,
-                                    from_=settings.TWILIO_FROM_NUMBER
-                                )
-                            sent_message_count += 1
-                        except twilio.TwilioRestException as e:
-                            print e
+                        sent_message_count = send_notification(message)
                 else:
                     # Remove any existing notification files
                     if os.path.exists(filename):
-                        os.remove(python)
+                        message = '%s (%s): Temperature is now within expected range (current: %sF | set: %sF)' % (structure.name, device.name, current_temp, away_temp,)
+                        sent_message_count = send_notification(message)
+                        os.remove(filename)
 
                     message = '%s (%s): Temp OK\nCurrent: %sF | Set: %sF\n' % (structure.name, device.name, current_temp, away_temp,)
 
