@@ -6,7 +6,7 @@ from nest_thermostat import utils as nest_utils
 
 import settings
 
-class NestNotify:
+class NestNotification:
   def __init__(self):
     self.client = twilio.rest.TwilioRestClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
@@ -58,12 +58,12 @@ class NestNotify:
                           f.write(str(num_notifications))
 
                       if num_notifications <= settings.MAX_NOTIFICATIONS:
-                          sent_message_count = send_notification(message)
+                          sent_message_count = self.send_notification(message)
                   else:
                       # Remove any existing notification files
                       if os.path.exists(filename):
                           message = '%s (%s): Temperature is now within expected range (current: %sF | set: %sF)' % (structure.name, device.name, current_temp, away_temp,)
-                          sent_message_count = send_notification(message)
+                          sent_message_count = self.send_notification(message)
                           os.remove(filename)
 
                       message = '%s (%s): Temp OK\nCurrent: %sF | Set: %sF\n' % (structure.name, device.name, current_temp, away_temp,)
@@ -73,5 +73,5 @@ class NestNotify:
       print 'Sent message count: %s' % (sent_message_count,)
 
 if __name__ == '__main__':
-    nest_notify = NestNotify()
-    nest_notify.process()
+    nest_notification = NestNotification()
+    nest_notification.process()
