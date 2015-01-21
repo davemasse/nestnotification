@@ -16,8 +16,8 @@ class NestNotification:
       try:
           for number in settings.TWILIO_TO_NUMBERS:
               print 'Notifying %s\n' % (number,)
-              message = self.client.messages.create(
-                  body = message,
+              self.client.messages.create(
+                  body=message,
                   to=number,
                   from_=settings.TWILIO_FROM_NUMBER
               )
