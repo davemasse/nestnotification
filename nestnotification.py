@@ -57,7 +57,7 @@ class NestNotification:
                         with open(filename, 'w+') as f:
                             f.write(str(num_notifications))
 
-                        if num_notifications <= settings.MAX_NOTIFICATIONS:
+                        if num_notifications <= settings.MAX_NOTIFICATIONS or settings.MAX_NOTIFICATIONS == 0:
                             sent_message_count = self.send_notification(message)
                     else:
                         # Remove any existing notification files
