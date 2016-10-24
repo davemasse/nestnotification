@@ -10,4 +10,4 @@ TWILIO_TO_NUMBERS = []
 TRIGGER_TEMP_DIFF = 3
 
 # The highest number of notifications to receive for any given thermostat
-MAX_NOTIFICATIONS = 0
+MAX_NOTIFICATIONS = 1

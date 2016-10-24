@@ -1,2 +1,2 @@
--e git+https://github.com/jkoelker/nest_thermostat.git#egg=nest
+-e git+https://github.com/jkoelker/python-nest.git#egg=nest
 twilio
