@@ -1,20 +1,21 @@
 import nest
 import os
-import twilio
-import twilio.rest
+from twilio.rest import Client
 
 import settings
 
 class NestNotification:
     def __init__(self):
-      self.client = twilio.rest.TwilioRestClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        self.client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
+        self.napi = nest.Nest(settings.NEST_USERNAME, settings.NEST_PASSWORD)
 
     def send_notification(self, message):
         sent_message_count = 0
 
         try:
             for number in settings.TWILIO_TO_NUMBERS:
-                print 'Notifying %s\n' % (number,)
+                print('Notifying %s\n' % (number,))
                 self.client.messages.create(
                     body=message,
                     to=number,
@@ -22,16 +23,19 @@ class NestNotification:
                 )
             sent_message_count += 1
         except twilio.TwilioRestException as e:
-            print e
+            print(e)
 
         return sent_message_count
 
-    def process(self):
-        napi = nest.Nest(settings.NEST_USERNAME, settings.NEST_PASSWORD)
+    def list_devices(self):
+        for structure in self.napi.structures:
+            for device in structure.devices:
+                print('%s: %s (%s)' % (structure.name, device.name, device._serial,))
 
+    def process(self):
         sent_message_count = 0
 
-        for structure in napi.structures:
+        for structure in self.napi.structures:
             if structure.away:
                 for device in structure.devices:
                     filename = device._serial
@@ -43,7 +47,7 @@ class NestNotification:
                     # Notify if away temp is TRIGGER_TEMP_DIFF degrees above current
                     if (current_temp <= (away_temp - settings.TRIGGER_TEMP_DIFF)):
                         message = '%s (%s): Current temp is %sF, but it should be %sF' % (structure.name, device.where.title(), current_temp, away_temp,)
-                        print message
+                        print(message)
 
                         if os.path.exists(filename):
                             # Increment notification count
@@ -67,9 +71,9 @@ class NestNotification:
 
                         message = '%s (%s): Temp OK\nCurrent: %sF | Set: %sF\n' % (structure.name, device.where.title(), current_temp, away_temp,)
 
-                        print message
+                        print(message)
 
-        print 'Sent message count: %s' % (sent_message_count,)
+        print('Sent message count: %s' % (sent_message_count,))
 
 if __name__ == '__main__':
     nest_notification = NestNotification()
